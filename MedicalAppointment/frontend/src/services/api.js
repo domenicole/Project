@@ -1,7 +1,9 @@
 import axios from 'axios';
 
 // API URL desde variable de entorno o default a producción
-const API_URL = import.meta.env.VITE_API_URL || 'https://medical-appointment-backend-2xx0.onrender.com';
+const RAW_API_URL = import.meta.env.VITE_API_URL || 'https://medical-appointment-backend-2xx0.onrender.com';
+// Normalizar para evitar doble '/api' si la variable ya incluye '/api' o una barra final
+const API_URL = RAW_API_URL.replace(/\/$/, '').replace(/\/api$/, '');
 
 // Use relative /api during development to hit the Vite proxy (avoids CORS).
 const baseURL = import.meta.env.DEV ? '/api' : `${API_URL}/api`;
@@ -29,13 +31,18 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Solo redirigir si no estamos ya en login
-      if (!window.location.pathname.includes('/login')) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = '/login';
+    if (error.response) {
+      console.error('[API ERROR]', error.response.status, error.response.data);
+      if (error.response.status === 401) {
+        // Solo redirigir si no estamos ya en login
+        if (!window.location.pathname.includes('/login')) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          window.location.href = '/login';
+        }
       }
+    } else {
+      console.error('[API ERROR] No response:', error.message || error);
     }
     return Promise.reject(error);
   }

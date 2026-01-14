@@ -20,10 +20,13 @@ app.use((req, res, next) => {
     'http://localhost:5500',
     'http://localhost:5173',
     'https://medical-appointment-frontend-ten.vercel.app',
-    'https://t6-awd-medical-appointment-web-syst.vercel.app'
+    'https://t6-awd-medical-appointment-web-syst.vercel.app',
+    'https://fronttemporalappointments.vercel.app'
   ];
 
-  if (allowedOrigins.includes(origin)) {
+  // Allow reflection of the request origin to support dynamic hosting domains (e.g., Vercel).
+  // If you want to restrict to a fixed set of origins, change this logic to validate against allowedOrigins.
+  if (origin) {
     res.setHeader('Access-Control-Allow-Origin', origin);
   }
 
@@ -46,13 +49,8 @@ app.use((req, res, next) => {
    CORS NORMAL
    ===================================================== */
 app.use(cors({
-  origin: [
-    'http://127.0.0.1:5500',
-    'http://localhost:5500',
-    'http://localhost:5173',
-    'https://medical-appointment-frontend-ten.vercel.app',
-    'https://t6-awd-medical-appointment-web-syst.vercel.app'
-  ],
+  // Reflect the request origin so deployed frontends on different domains (e.g., Vercel) work without updating the list.
+  origin: true,
   credentials: true
 }));
 
@@ -61,9 +59,11 @@ app.use(cors({
    ===================================================== */
 app.use(express.json());
 
-// Log simple de requests
+// Log simple de requests + debug de Authorization (enmascarado)
 app.use((req, res, next) => {
-  console.log(`[REQ] ${req.method} ${req.originalUrl}`);
+  const authHeader = req.headers.authorization || '';
+  const masked = authHeader ? `${authHeader.substring(0, 20)}...` : 'none';
+  console.log(`[REQ] ${req.method} ${req.originalUrl} auth=${masked}`);
   next();
 });
 
