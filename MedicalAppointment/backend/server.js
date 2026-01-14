@@ -12,27 +12,39 @@ const PORT = process.env.PORT || 3000;
 /* =====================================================
    🔥 CORS PREFLIGHT GLOBAL (DEBE IR PRIMERO)
    ===================================================== */
+
+// Lista por defecto y posibilidad de override mediante ALLOWED_ORIGINS (CSV)
+const DEFAULT_ALLOWED_ORIGINS = [
+  'http://127.0.0.1:5500',
+  'http://localhost:5500',
+  'http://127.0.0.1:5173',
+  'http://localhost:5173',
+  'https://medical-appointment-frontend-ten.vercel.app',
+  'https://t6-awd-medical-appointment-web-syst.vercel.app',
+  'https://t6-medical-appointment.vercel.app',
+  'https://t6-medical-appointment-bropphl4c-domenicas-projects-58f1b051.vercel.app'
+];
+
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim()).filter(Boolean)
+  : DEFAULT_ALLOWED_ORIGINS;
+
+// Helper que permite también subdominios de vercel (útil para previews)
+function isOriginAllowed(origin) {
+  if (!origin) return false;
+  if (allowedOrigins.includes(origin)) return true;
+  // Permitir cualquier preview de Vercel (*.vercel.app)
+  if (origin.endsWith('.vercel.app')) return true;
+  return false;
+}
+
 app.use((req, res, next) => {
   const origin = req.headers.origin;
 
-  const DEFAULT_ALLOWED_ORIGINS = [
-    'http://127.0.0.1:5500',
-    'http://localhost:5500',
-    'http://127.0.0.1:5173',
-    'http://localhost:5173',
-    'https://medical-appointment-frontend-ten.vercel.app',
-    'https://t6-awd-medical-appointment-web-syst.vercel.app',
-    'https://t6-medical-appointment.vercel.app',
-    'https://t6-medical-appointment-bropphl4c-domenicas-projects-58f1b051.vercel.app'
-  ];
-
-  // Allow overriding the list of allowed origins via env var ALLOWED_ORIGINS (comma-separated)
-  const allowedOrigins = process.env.ALLOWED_ORIGINS
-    ? process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim()).filter(Boolean)
-    : DEFAULT_ALLOWED_ORIGINS;
-
-  if (allowedOrigins.includes(origin)) {
+  if (isOriginAllowed(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    console.warn('[CORS] Origin not allowed:', origin);
   }
 
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
@@ -54,7 +66,12 @@ app.use((req, res, next) => {
    CORS NORMAL
    ===================================================== */
 app.use(cors({
-  origin: allowedOrigins,
+  origin: function (incomingOrigin, callback) {
+    // Cuando no hay Origin (requests desde servidores), permitir
+    if (!incomingOrigin) return callback(null, true);
+    if (isOriginAllowed(incomingOrigin)) return callback(null, true);
+    return callback(new Error('Origin not allowed by CORS'));
+  },
   credentials: true
 }));
 
@@ -117,6 +134,16 @@ app.use('/api/reminders', reminderRoutes);
    ===================================================== */
 app.get('/api/test', (req, res) => {
   res.json({ mensaje: '¡El servidor funciona correctamente!' });
+});
+
+/* =====================================================
+   RUTA DEBUG - CORS
+   Útil para verificar remotamente qué origen llega y la
+   lista de orígenes permitidos en el servidor (no sensible)
+   ===================================================== */
+app.get('/api/debug/cors', (req, res) => {
+  const origin = req.headers.origin || null;
+  res.json({ origin, allowedOrigins });
 });
 
 /* =====================================================
