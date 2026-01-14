@@ -15,15 +15,21 @@ const PORT = process.env.PORT || 3000;
 app.use((req, res, next) => {
   const origin = req.headers.origin;
 
-  const allowedOrigins = [
+  const DEFAULT_ALLOWED_ORIGINS = [
     'http://127.0.0.1:5500',
     'http://localhost:5500',
     'http://127.0.0.1:5173',
     'http://localhost:5173',
     'https://medical-appointment-frontend-ten.vercel.app',
     'https://t6-awd-medical-appointment-web-syst.vercel.app',
-    'https://t6-medical-appointment.vercel.app'
+    'https://t6-medical-appointment.vercel.app',
+    'https://t6-medical-appointment-bropphl4c-domenicas-projects-58f1b051.vercel.app'
   ];
+
+  // Allow overriding the list of allowed origins via env var ALLOWED_ORIGINS (comma-separated)
+  const allowedOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim()).filter(Boolean)
+    : DEFAULT_ALLOWED_ORIGINS;
 
   if (allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
@@ -48,15 +54,7 @@ app.use((req, res, next) => {
    CORS NORMAL
    ===================================================== */
 app.use(cors({
-  origin: [
-    'http://127.0.0.1:5500',
-    'http://localhost:5500',
-    'http://127.0.0.1:5173',
-    'http://localhost:5173',
-    'https://medical-appointment-frontend-ten.vercel.app',
-    'https://t6-awd-medical-appointment-web-syst.vercel.app',
-    'https://t6-medical-appointment.vercel.app'
-  ],
+  origin: allowedOrigins,
   credentials: true
 }));
 
