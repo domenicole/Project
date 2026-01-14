@@ -4,7 +4,6 @@ const supabase = require('../database');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const passport = require('../config/passport');
-const { authMiddleware } = require('../middleware/auth');
 
 // ========== GOOGLE OAUTH ROUTES ==========
 
@@ -270,16 +269,6 @@ router.post('/register', async (req, res) => {
     } catch (error) {
         console.error('Error en registro:', error);
         res.status(500).json({ error: 'Error al registrar el paciente. Por favor intente nuevamente.' });
-    }
-});
-
-// Endpoint para obtener información del usuario autenticado
-router.get('/me', authMiddleware, async (req, res) => {
-    try {
-        res.json({ user: req.user });
-    } catch (error) {
-        console.error('Error obteniendo usuario actual:', error);
-        res.status(500).json({ error: 'Error al obtener usuario actual' });
     }
 });
 

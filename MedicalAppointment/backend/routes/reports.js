@@ -8,7 +8,7 @@ const reportController = require('../controllers/reportController');
  * 🔥 PRE-FLIGHT CORS
  * Permite que el navegador complete OPTIONS antes del auth
  */
-router.use(cors());
+router.options('/*splat', cors());
 
 /**
  * 🔐 AUTENTICACIÓN
