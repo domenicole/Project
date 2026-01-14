@@ -21,7 +21,8 @@ app.use((req, res, next) => {
     'http://127.0.0.1:5173',
     'http://localhost:5173',
     'https://medical-appointment-frontend-ten.vercel.app',
-    'https://t6-awd-medical-appointment-web-syst.vercel.app'
+    'https://t6-awd-medical-appointment-web-syst.vercel.app',
+    'https://t6-medical-appointment.vercel.app'
   ];
 
   if (allowedOrigins.includes(origin)) {
@@ -53,7 +54,8 @@ app.use(cors({
     'http://127.0.0.1:5173',
     'http://localhost:5173',
     'https://medical-appointment-frontend-ten.vercel.app',
-    'https://t6-awd-medical-appointment-web-syst.vercel.app'
+    'https://t6-awd-medical-appointment-web-syst.vercel.app',
+    'https://t6-medical-appointment.vercel.app'
   ],
   credentials: true
 }));
